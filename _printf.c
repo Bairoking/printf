@@ -1,71 +1,67 @@
-#include <unistd.h>
-#include <stdarg.h>
 #include "main.h"
-/**
- * _putchar - writes the character c to stdout
- * @c: The character to print
- *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
-*/
-
-int _putchar(char c)
-{
-	return (write(1, &c, 1));
-}
 
 /**
- * print_string - prints an array of string characters
- * @str: the variable to print
+ * _strlen - Returns the length of a string
+ * @s: The string
  *
+ * Return: The length of the string
  */
-
-void print_string(char *str)
+int _strlen(const char *s)
 {
-	int i = 0;
+	int len = 0;
 
-	do {
-		_putchar(str[i]);
-		i++;
-	} while (str[i] != '\0');
+	while (s[len])
+		len++;
+
+	return (len);
 }
 
 /**
- * _printf - Produces output according to a format
- * @format: The format of the string.
- * Return: The number of characters printed
+ * _printf - prints anything
+ * @format: the format string
+ *
+ * Return: the number of characters printed
  */
 int _printf(const char *format, ...)
 {
-	va_list ap;
-	unsigned int j = 0, n = 0;
+	va_list args;
+	printer printer;
+	int i = 0;
+	int characters_printed = 0;
 
-	va_start(ap, format);
-	while (format[j] != '\0')
+	if (format == NULL)
+		return (-1);
+	va_start(args, format);
+	while (format[i])
 	{
-		if (format[j] == '%')
+		for (; format[i] != '%' && format[i]; i++)
 		{
-			switch (format[j + 1])
-			{
-				case 'c':
-					_putchar(va_arg(ap, int));
-					break;
-				case 's':
-					print_string(va_arg(ap, char *));
-					break;
-				case '%':
-					_putchar('%');
-					break;
-			}
+			_putchar(format[i]);
+			characters_printed++;
+		}
+		if (!format[i])
+			return (characters_printed);
+		if (format[i] == '%' && _strlen(format) == 1)
+			return (-1);
+		printer = _get_printer(&format[i + 1]);
+		if (printer.specifier != NULL)
+		{
+			characters_printed += printer.run(args);
+			i += 2; /* move past the specifier */
+			continue;
+		}
 
-			j++;
-		}
+		if (!format[i + 1])
+			return (characters_printed);
+
+		_putchar(format[i]);
+		characters_printed++;
+
+		if (format[i + 1] == '%')
+			i += 2; /* move past the % */
 		else
-		{
-			_putchar(format[j]);
-		}
-		j++;
+			i++;
 	}
-	va_end(ap);
-	return (n);
+	va_end(args);
+	return (characters_printed);
 }
